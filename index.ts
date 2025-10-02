@@ -62,6 +62,40 @@ export async function fetch(req: Request, server: Server) {
     return; // do not return a Response object
   }
 
+  if (req.method === "GET" && url.pathname === "/callback") {
+    // return html with redirect to custom scheme
+    return new Response(
+      `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // Extract the access_token parameter from the URL
+        const urlParams = new URLSearchParams(window.location.hash);
+        const access_token = urlParams.get('access_token');
+
+        // Redirect to the custom scheme with the access_token
+        if (access_token) {
+            window.location.href = 'watchalong://callback#access_token=' + access_token;
+        } else {
+            document.body.innerHTML = '<h1>Error: No code parameter found in URL</h1>';
+        }
+    </script>
+</head>
+<body>
+    <h1>Redirecting...</h1>
+</body>
+</html>`,
+      {
+        headers: { "Content-Type": "text/html", "Access-Control-Allow-Origin": "*" },
+      },
+    );
+  }
+  
+
+
   if (req.method === "POST" && url.pathname === "/alias") {
     const { username, alias } = await req.json();
     
