@@ -1,38 +1,21 @@
-# use the official Bun image
-# see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:latest AS base
-WORKDIR /usr/src/app
+# Start with a base image that has Go installed.
+FROM golang:1.21-alpine
 
-# install dependencies into temp directory
-# this will cache them and speed up future builds
-FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lock /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
+# Set the working directory inside the container.
+WORKDIR /app
 
-# install with --production (exclude devDependencies)
-RUN mkdir -p /temp/prod
-COPY package.json bun.lock /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
+# Copy the Go module files and download dependencies.
+COPY go.mod go.sum ./
+RUN go mod download
 
-# copy node_modules from temp directory
-# then copy all (non-ignored) project files into the image
-FROM base AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
+# Copy the rest of the application source code.
 COPY . .
 
-# [optional] tests & build
-#ENV NODE_ENV=production
-#RUN bun test
-#RUN bun run build
+# Build the Go application.
+RUN go build -o /watchalong-server ./cmd/server.go
 
-# copy production dependencies and source code into final image
-FROM base AS release
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/index.ts .
-COPY --from=prerelease /usr/src/app/package.json .
+# Expose the port the application will run on.
+EXPOSE 8080
 
-# run the app
-USER bun
-EXPOSE 3000/tcp
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+# Set the entrypoint for the container.
+ENTRYPOINT [ "/watchalong-server" ]

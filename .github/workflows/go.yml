@@ -1,20 +1,35 @@
-name: Build and Publish Docker Image
+name: Go
 
 on:
   push:
-    branches: [main]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build-and-push:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Test
+      run: go test -v ./...
+
+    - name: Build
+      run: go build -v ./...
+
+  build-and-push-docker-image:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -22,7 +37,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 

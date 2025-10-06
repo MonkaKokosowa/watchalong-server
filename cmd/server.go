@@ -1,20 +1,32 @@
 package main
 
 import (
-	"log"
-
-	"github.com/MonkaKokosowa/watchalong-server/api"
+	"github.com/MonkaKokosowa/watchalong-server/database"
+	"github.com/MonkaKokosowa/watchalong-server/http"
+	"github.com/MonkaKokosowa/watchalong-server/logger"
+	"github.com/MonkaKokosowa/watchalong-server/websocket"
 )
 
 func main() {
 	// Initialize the database
-	if err := api.InitializeDatabase(); err != nil {
-		log.Fatal(err)
+
+	_, err := database.InitializeDB("watchalong.sqlite")
+	if err != nil {
+		logger.Error("Failed to initialize database", err)
+		return
+	} else {
+		logger.Info("Database initialized successfully")
 	}
-	defer api.CloseDatabase()
+	defer database.CloseDatabase()
+
+	wsManager := websocket.NewManager()
+	go wsManager.BroadcastUpdates()
+
+	logger.Info("Websocket manager initialized successfully")
 
 	// Start the server
-	if err := api.StartServer(); err != nil {
-		log.Fatal(err)
+	logger.Info("Starting webserver on port 8080")
+	if err := http.StartServer(wsManager); err != nil {
+		logger.Error("Failed to start server", err)
 	}
 }
