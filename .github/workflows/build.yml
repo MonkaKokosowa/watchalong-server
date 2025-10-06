@@ -1,25 +1,10 @@
-name: Go
+name: Build and Publish Docker Image
 
 on:
     push:
-        branches: ["**"]
-    pull_request:
-        branches: ["**"]
+        branches: ["main"]
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-
-            - name: Set up Go
-              uses: actions/setup-go@v4
-              with:
-                  go-version: "1.21"
-
-            - name: Test
-              run: go test -v ./...
-
     build:
         needs: test
         runs-on: ubuntu-latest
