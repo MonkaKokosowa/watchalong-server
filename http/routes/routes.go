@@ -6,15 +6,32 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/MonkaKokosowa/watchalong-server/api/alias"
-	"github.com/MonkaKokosowa/watchalong-server/api/movie"
-	"github.com/MonkaKokosowa/watchalong-server/api/queue"
+	"github.com/MonkaKokosowa/watchalong-server/api"
 	"github.com/MonkaKokosowa/watchalong-server/logger"
+	"github.com/MonkaKokosowa/watchalong-server/websocket"
 	"github.com/gorilla/mux"
 )
 
+func UpdateClients() {
+	movies, err := api.GetMovies()
+	if err != nil {
+		movies = []api.Movie{}
+	}
+	queue, err := api.GetQueue()
+	if err != nil {
+		queue = []api.Movie{}
+	}
+	if queue == nil {
+		queue = []api.Movie{}
+	}
+	if movies == nil {
+		movies = []api.Movie{}
+	}
+	websocket.WsManager.BroadcastUpdates(movies, queue)
+}
+
 func GetMovies(w http.ResponseWriter, r *http.Request) {
-	movies, err := movie.GetMovies()
+	movies, err := api.GetMovies()
 	if err != nil {
 		logger.Error("Failed to get movies", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -41,7 +58,7 @@ func GetMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedMovie, err := movie.GetMovie(movie_id)
+	retrievedMovie, err := api.GetMovie(movie_id)
 	if err != nil {
 		logger.Error("Failed to get movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -53,7 +70,7 @@ func GetMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddMovie(w http.ResponseWriter, r *http.Request) {
-	var newMovie movie.Movie
+	var newMovie api.Movie
 	if err := json.NewDecoder(r.Body).Decode(&newMovie); err != nil {
 		logger.Error("Failed to decode movie", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -69,6 +86,7 @@ func AddMovie(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(fmt.Sprintf(`{"id": %d}`, id)))
+	UpdateClients()
 }
 
 func RateMovie(w http.ResponseWriter, r *http.Request) {
@@ -83,17 +101,17 @@ func RateMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := movie.RateMovie(body.MovieID, body.Username, body.Rating); err != nil {
+	if err := api.RateMovie(body.MovieID, body.Username, body.Rating); err != nil {
 		logger.Error("Failed to rate movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	UpdateClients()
 	w.WriteHeader(http.StatusOK)
 }
 
 func AddAlias(w http.ResponseWriter, r *http.Request) {
-	var newAlias alias.Alias
+	var newAlias api.Alias
 	if err := json.NewDecoder(r.Body).Decode(&newAlias); err != nil {
 		logger.Error("Failed to decode alias", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -110,7 +128,7 @@ func AddAlias(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAliases(w http.ResponseWriter, r *http.Request) {
-	aliases, err := alias.GetAliases()
+	aliases, err := api.GetAliases()
 	if err != nil {
 		logger.Error("Failed to get aliases", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -138,7 +156,7 @@ func AddMovieToQueue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedMovie, err := movie.GetMovie(body.ID)
+	retrievedMovie, err := api.GetMovie(body.ID)
 	if err != nil {
 		logger.Error("Failed to get movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -150,7 +168,7 @@ func AddMovieToQueue(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	UpdateClients()
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -164,17 +182,17 @@ func RemoveMovieFromQueue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := queue.RemoveMovieFromQueue(body.ID); err != nil {
+	if err := api.RemoveMovieFromQueue(body.ID); err != nil {
 		logger.Error("Failed to remove movie from queue", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	UpdateClients()
 	w.WriteHeader(http.StatusOK)
 }
 
 func GetQueue(w http.ResponseWriter, r *http.Request) {
-	queue, err := queue.GetQueue()
+	queue, err := api.GetQueue()
 	if err != nil {
 		logger.Error("Failed to get queue", err)
 		w.WriteHeader(http.StatusInternalServerError)

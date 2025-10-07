@@ -4,15 +4,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/MonkaKokosowa/watchalong-server/api/alias"
-	"github.com/MonkaKokosowa/watchalong-server/api/movie"
+	"github.com/MonkaKokosowa/watchalong-server/api"
 	"github.com/MonkaKokosowa/watchalong-server/database"
 )
 
 func PrepareDB() {
 	database.InitializeDB("testing.sqlite")
-	movie.ClearMovies()
-	alias.ClearAliases()
+	api.ClearMovies()
+	api.ClearAliases()
 }
 
 func CleanupDB() {

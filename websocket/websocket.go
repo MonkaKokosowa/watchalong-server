@@ -2,13 +2,16 @@ package websocket
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/MonkaKokosowa/watchalong-server/api/movie"
-	"github.com/MonkaKokosowa/watchalong-server/api/queue"
+	"github.com/MonkaKokosowa/watchalong-server/api"
+	"github.com/MonkaKokosowa/watchalong-server/logger"
 	"github.com/gorilla/websocket"
 )
+
+var WsManager = NewManager()
 
 type Manager struct {
 	clients   map[*websocket.Conn]bool
@@ -27,7 +30,7 @@ func NewManager() *Manager {
 func (m *Manager) WsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := m.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		logger.Error("Failed to upgrade websocket ", err)
 		return
 	}
 	defer conn.Close()
@@ -37,33 +40,22 @@ func (m *Manager) WsHandler(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			logger.Error("Failed to read message", err)
 			delete(m.clients, conn)
 			break
 		}
-		log.Printf("Received message: %s", message)
+		logger.Info(fmt.Sprint("Received message: ", string(message)))
+
 	}
 }
 
-func (m *Manager) BroadcastUpdates() {
-	movies, err := movie.GetMovies()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	movieQueue, err := queue.GetQueue()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
+func (m *Manager) BroadcastUpdates(movies []api.Movie, queue []api.Movie) {
 	response := struct {
-		Movies []movie.Movie `json:"movies"`
-		Queue  []movie.Movie `json:"queue"`
+		Movies []api.Movie `json:"movies"`
+		Queue  []api.Movie `json:"queue"`
 	}{
 		Movies: movies,
-		Queue:  movieQueue,
+		Queue:  queue,
 	}
 
 	jsonBytes, err := json.Marshal(response)

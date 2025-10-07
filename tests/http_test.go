@@ -9,8 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/MonkaKokosowa/watchalong-server/api/alias"
-	"github.com/MonkaKokosowa/watchalong-server/api/movie"
+	"github.com/MonkaKokosowa/watchalong-server/api"
 	customhttp "github.com/MonkaKokosowa/watchalong-server/http"
 	"github.com/gorilla/mux"
 	_ "modernc.org/sqlite"
@@ -34,7 +33,7 @@ func TestHTTPGetMovies(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -58,7 +57,7 @@ func TestHTTPGetMovies(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var movies []movie.Movie
+	var movies []api.Movie
 	if err := json.Unmarshal(body, &movies); err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +75,7 @@ func TestHTTPGetMovie(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -100,7 +99,7 @@ func TestHTTPGetMovie(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var retrievedMovie movie.Movie
+	var retrievedMovie api.Movie
 	if err := json.Unmarshal(body, &retrievedMovie); err != nil {
 		t.Fatal(err)
 	}
@@ -114,7 +113,7 @@ func TestHTTPAddMovie(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -153,7 +152,7 @@ func TestHTTPRateMovie(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -193,7 +192,7 @@ func TestHTTPAddAlias(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newAlias := alias.Alias{
+	newAlias := api.Alias{
 		Alias:    "Test Alias",
 		Username: "test",
 	}
@@ -218,7 +217,7 @@ func TestHTTPGetAliases(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newAlias := alias.Alias{
+	newAlias := api.Alias{
 		Alias:    "Test Alias",
 		Username: "test",
 	}
@@ -260,7 +259,7 @@ func TestHTTPAddMovieToQueue(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -295,7 +294,7 @@ func TestHTTPRemoveMovieFromQueue(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -336,7 +335,7 @@ func TestHTTPGetQueue(t *testing.T) {
 	server, cleanup := setup(t)
 	defer cleanup()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -366,7 +365,7 @@ func TestHTTPGetQueue(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var movies []movie.Movie
+	var movies []api.Movie
 	if err := json.Unmarshal(body, &movies); err != nil {
 		t.Fatal(err)
 	}

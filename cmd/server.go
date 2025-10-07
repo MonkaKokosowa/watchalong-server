@@ -19,14 +19,13 @@ func main() {
 	}
 	defer database.CloseDatabase()
 
-	wsManager := websocket.NewManager()
-	go wsManager.BroadcastUpdates()
+	// go wsManager.BroadcastUpdates()
 
 	logger.Info("Websocket manager initialized successfully")
 
 	// Start the server
 	logger.Info("Starting webserver on port 8080")
-	if err := http.StartServer(wsManager); err != nil {
+	if err := http.StartServer(websocket.WsManager); err != nil {
 		logger.Error("Failed to start server", err)
 	}
 }

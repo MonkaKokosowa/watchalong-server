@@ -3,14 +3,13 @@ package tests
 import (
 	"testing"
 
-	"github.com/MonkaKokosowa/watchalong-server/api/movie"
-	"github.com/MonkaKokosowa/watchalong-server/api/queue"
+	"github.com/MonkaKokosowa/watchalong-server/api"
 	_ "modernc.org/sqlite"
 )
 
 func TestAddMovie(t *testing.T) {
 	PrepareDB()
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:         "Test Movie",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -27,7 +26,7 @@ func TestAddMovie(t *testing.T) {
 		t.Fatalf("AddMovie() returned id 0")
 	}
 
-	retrievedMovie, err := movie.GetMovie(id)
+	retrievedMovie, err := api.GetMovie(id)
 	if err != nil {
 		t.Fatalf("GetMovie() error = %v", err)
 	}
@@ -39,7 +38,7 @@ func TestAddMovie(t *testing.T) {
 
 func TestGetMovies(t *testing.T) {
 	PrepareDB()
-	movie1 := movie.Movie{
+	movie1 := api.Movie{
 		Name:         "Test Movie 1",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -47,7 +46,7 @@ func TestGetMovies(t *testing.T) {
 		TmdbImageUrl: "http://example.com/image.jpg",
 	}
 
-	movie2 := movie.Movie{
+	movie2 := api.Movie{
 		Name:         "Test Movie 2",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -65,7 +64,7 @@ func TestGetMovies(t *testing.T) {
 		t.Fatalf("AddMovie() error = %v", err)
 	}
 
-	movies, err := movie.GetMovies()
+	movies, err := api.GetMovies()
 	if err != nil {
 		t.Fatalf("GetMovies() error = %v", err)
 	}
@@ -77,7 +76,7 @@ func TestGetMovies(t *testing.T) {
 
 func TestDeleteMovie(t *testing.T) {
 	PrepareDB()
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:         "Test Movie",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -95,7 +94,7 @@ func TestDeleteMovie(t *testing.T) {
 		t.Fatalf("DeleteMovie() error = %v", err)
 	}
 
-	_, err = movie.GetMovie(id)
+	_, err = api.GetMovie(id)
 	if err == nil {
 		t.Fatalf("GetMovie() should have failed, but it didn't")
 	}
@@ -103,7 +102,7 @@ func TestDeleteMovie(t *testing.T) {
 
 func TestAddMovieToQueue(t *testing.T) {
 	PrepareDB()
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:         "Test Movie",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -121,7 +120,7 @@ func TestAddMovieToQueue(t *testing.T) {
 		t.Fatalf("AddMovieToQueue() error = %v", err)
 	}
 
-	retrievedMovie, err := movie.GetMovie(id)
+	retrievedMovie, err := api.GetMovie(id)
 	if err != nil {
 		t.Fatalf("GetMovie() error = %v", err)
 	}
@@ -133,7 +132,7 @@ func TestAddMovieToQueue(t *testing.T) {
 
 func TestFinishMovie(t *testing.T) {
 	PrepareDB()
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:         "Test Movie",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -155,7 +154,7 @@ func TestFinishMovie(t *testing.T) {
 		t.Fatalf("FinishMovie() error = %v", err)
 	}
 
-	retrievedMovie, err := movie.GetMovie(id)
+	retrievedMovie, err := api.GetMovie(id)
 	if err != nil {
 		t.Fatalf("GetMovie() error = %v", err)
 	}
@@ -171,7 +170,7 @@ func TestFinishMovie(t *testing.T) {
 
 func TestRemoveMovieFromQueue(t *testing.T) {
 	PrepareDB()
-	movie1 := movie.Movie{
+	movie1 := api.Movie{
 		Name:         "Test Movie 1",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -179,7 +178,7 @@ func TestRemoveMovieFromQueue(t *testing.T) {
 		TmdbImageUrl: "http://example.com/image.jpg",
 	}
 
-	movie2 := movie.Movie{
+	movie2 := api.Movie{
 		Name:         "Test Movie 2",
 		IsMovie:      true,
 		ProposedBy:   "test",
@@ -208,11 +207,11 @@ func TestRemoveMovieFromQueue(t *testing.T) {
 		t.Fatalf("AddMovieToQueue() error = %v", err)
 	}
 
-	if err := queue.RemoveMovieFromQueue(id1); err != nil {
+	if err := api.RemoveMovieFromQueue(id1); err != nil {
 		t.Fatalf("RemoveMovieFromQueue() error = %v", err)
 	}
 
-	retrievedMovie2, err := movie.GetMovie(id2)
+	retrievedMovie2, err := api.GetMovie(id2)
 	if err != nil {
 		t.Fatalf("GetMovie() error = %v", err)
 	}
@@ -225,7 +224,7 @@ func TestRemoveMovieFromQueue(t *testing.T) {
 func TestRateMovie(t *testing.T) {
 	PrepareDB()
 
-	newMovie := movie.Movie{
+	newMovie := api.Movie{
 		Name:    "Test Movie",
 		IsMovie: true,
 	}
@@ -234,11 +233,11 @@ func TestRateMovie(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := movie.RateMovie(id, "test", 5); err != nil {
+	if err := api.RateMovie(id, "test", 5); err != nil {
 		t.Fatal(err)
 	}
 
-	retrievedMovie, err := movie.GetMovie(id)
+	retrievedMovie, err := api.GetMovie(id)
 	if err != nil {
 		t.Fatal(err)
 	}
