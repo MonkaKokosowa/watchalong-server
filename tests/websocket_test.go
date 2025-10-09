@@ -96,4 +96,12 @@ func TestWebSocketUpdate(t *testing.T) {
 	if string(p) != expected {
 		t.Errorf("got %s, want %s", string(p), expected)
 	}
+
+	// Gracefully close the connection
+	err = ws.WriteMessage(gwebsocket.CloseMessage, gwebsocket.FormatCloseMessage(gwebsocket.CloseNormalClosure, ""))
+	if err != nil {
+		t.Fatalf("could not write close message: %v", err)
+	}
+	defer ws.Close()
+
 }

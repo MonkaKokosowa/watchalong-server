@@ -129,8 +129,8 @@ func TestHTTPAddMovie(t *testing.T) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("expected status OK, got %v", resp.Status)
+	if resp.StatusCode != http.StatusCreated {
+		t.Fatalf("expected status Created, got %v", resp.Status)
 	}
 
 	body, err := io.ReadAll(resp.Body)

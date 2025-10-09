@@ -39,7 +39,12 @@ func (m *Manager) WsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		_, message, err := conn.ReadMessage()
-		if err != nil {
+
+		// HACKY FIX FIND A BETTER WAY TO HANDLE CLOSE
+		if err.Error() == "websocket: close 1000 (normal)" {
+			delete(m.clients, conn)
+			break
+		} else if err != nil {
 			logger.Error("Failed to read message", err)
 			delete(m.clients, conn)
 			break

@@ -83,7 +83,7 @@ func AddMovie(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(fmt.Sprintf(`{"id": %d}`, id)))
 	UpdateClients()
@@ -91,9 +91,9 @@ func AddMovie(w http.ResponseWriter, r *http.Request) {
 
 func RateMovie(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		MovieID  int     `json:"movieID"`
-		Rating   float64 `json:"rating"`
-		Username string  `json:"username"`
+		MovieID  int    `json:"movieID"`
+		Rating   int    `json:"rating"`
+		Username string `json:"username"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		logger.Error("Failed to decode movie rating", err)
@@ -101,7 +101,7 @@ func RateMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := api.RateMovie(body.MovieID, body.Username, body.Rating); err != nil {
+	if err := api.RateMovie(body.MovieID, body.Username, float64(body.Rating)); err != nil {
 		logger.Error("Failed to rate movie", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
