@@ -39,7 +39,7 @@ func (m *Manager) WsHandler(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		_, message, err := conn.ReadMessage()
-		if err != nil {
+		if err != nil && err != websocket.ErrCloseSent {
 			logger.Error("Failed to read message", err)
 			delete(m.clients, conn)
 			break
