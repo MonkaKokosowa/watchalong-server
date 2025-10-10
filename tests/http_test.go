@@ -290,52 +290,52 @@ func TestHTTPAddMovieToQueue(t *testing.T) {
 	}
 }
 
-// func TestHTTPRemoveMovieFromQueue(t *testing.T) {
-// 	server, cleanup := setup(t)
-// 	defer cleanup()
+func TestHTTPRemoveMovieFromQueue(t *testing.T) {
+	server, cleanup := setup(t)
+	defer cleanup()
 
-// 	newMovie := api.Movie{
-// 		Name:         "Test Movie",
-// 		IsMovie:      true,
-// 		ProposedBy:   "Test User",
-// 		Ratings:      "{}",
-// 		TmdbID:       00000,
-// 		TmdbImageUrl: "google.com",
-// 	}
-// 	id, err := newMovie.AddMovie()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	newMovie := api.Movie{
+		Name:         "Test Movie",
+		IsMovie:      true,
+		ProposedBy:   "Test User",
+		Ratings:      "{}",
+		TmdbID:       00000,
+		TmdbImageUrl: "google.com",
+	}
+	id, err := newMovie.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	newMovie.ID = id
-// 	err = newMovie.AddMovieToQueue()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	newMovie.ID = id
+	err = newMovie.AddMovieToQueue()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	body := struct {
-// 		ID      int  `json:"id"`
-// 		watched bool `json:"watched"`
-// 	}{
-// 		ID:      id,
-// 		watched: true,
-// 	}
+	body := struct {
+		ID      int  `json:"id"`
+		watched bool `json:"watched"`
+	}{
+		ID:      id,
+		watched: true,
+	}
 
-// 	jsonBody, err := json.Marshal(body)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	resp, err := http.Post(server.URL+"/queue/remove", "application/json", strings.NewReader(string(jsonBody)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer resp.Body.Close()
+	resp, err := http.Post(server.URL+"/queue/remove", "application/json", strings.NewReader(string(jsonBody)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
 
-// 	if resp.StatusCode != http.StatusOK {
-// 		t.Fatalf("expected status OK, got %v", resp.Status)
-// 	}
-// }
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected status OK, got %v", resp.Status)
+	}
+}
 
 func TestHTTPGetQueue(t *testing.T) {
 	server, cleanup := setup(t)

@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func StartServer(wsManager *websocket.Manager) error {
+func NewServer(wsManager *websocket.Manager) *http.Server {
 	router := mux.NewRouter()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello, World!"))
@@ -17,9 +17,10 @@ func StartServer(wsManager *websocket.Manager) error {
 	AddRoutes(router)
 	router.HandleFunc("/ws", wsManager.WsHandler)
 
-	error := http.ListenAndServe(":8080", router)
-
-	return error
+	return &http.Server{
+		Addr:    ":8080",
+		Handler: router,
+	}
 }
 
 func AddRoutes(router *mux.Router) {
