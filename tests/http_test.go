@@ -241,7 +241,7 @@ func TestHTTPGetAliases(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var aliases map[string]string
+	var aliases []api.Alias
 	if err := json.Unmarshal(body, &aliases); err != nil {
 		t.Fatal(err)
 	}
@@ -250,8 +250,8 @@ func TestHTTPGetAliases(t *testing.T) {
 		t.Fatalf("expected 1 alias, got %d", len(aliases))
 	}
 
-	if aliases["test"] != "Test Alias" {
-		t.Errorf("expected alias 'Test Alias', got %s", aliases["test"])
+	if aliases[0].Alias != "Test Alias" || aliases[0].Username != "test" {
+		t.Errorf("expected alias 'Test Alias', got %s", aliases[0].Alias)
 	}
 }
 
