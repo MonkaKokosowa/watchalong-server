@@ -207,7 +207,7 @@ func TestRemoveMovieFromQueue(t *testing.T) {
 		t.Fatalf("AddMovieToQueue() error = %v", err)
 	}
 
-	if err := api.RemoveMovieFromQueue(id1); err != nil {
+	if err := movie1.RemoveMovieFromQueue(); err != nil {
 		t.Fatalf("RemoveMovieFromQueue() error = %v", err)
 	}
 
