@@ -34,7 +34,8 @@ func InitializeDB(filepath string) (*sql.DB, error) {
 	_, err = DB.Exec(`CREATE TABLE IF NOT EXISTS aliases (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		username TEXT NOT NULL,
-		alias TEXT NOT NULL
+		alias TEXT NOT NULL,
+		avatar_url TEXT
 	)`)
 	if err != nil {
 		return nil, err
