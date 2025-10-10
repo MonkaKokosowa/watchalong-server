@@ -33,4 +33,5 @@ func AddRoutes(router *mux.Router) {
 	router.HandleFunc("/queue/remove", routes.RemoveMovieFromQueue).Methods("POST")
 	router.HandleFunc("/queue", routes.GetQueue).Methods("GET")
 	router.HandleFunc("/callback", routes.Callback).Methods("GET")
+
 }

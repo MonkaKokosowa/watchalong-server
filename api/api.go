@@ -216,25 +216,19 @@ func (movie *Movie) FinishMovie() error {
 	return nil
 }
 
-func RemoveMovieFromQueue(id int) error {
+func (movie *Movie) RemoveMovieFromQueue() error {
 
 	tx, err := database.DB.Begin()
 	if err != nil {
 		return err
 	}
 
-	retrievedMovie, err := GetMovie(id)
-	if err != nil {
+	if _, err := tx.Exec(`UPDATE movies SET queue_position = NULL WHERE id = ?`, movie.ID); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if _, err := tx.Exec(`UPDATE movies SET queue_position = NULL WHERE id = ?`, id); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	rows, err := tx.Query(`SELECT * FROM movies WHERE queue_position > ?`, retrievedMovie.QueuePosition.Int64)
+	rows, err := tx.Query(`SELECT * FROM movies WHERE queue_position > ?`, movie.QueuePosition.Int64)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -249,7 +243,7 @@ func RemoveMovieFromQueue(id int) error {
 			return err
 		}
 
-		if m.QueuePosition.Int64 > retrievedMovie.QueuePosition.Int64 {
+		if m.QueuePosition.Int64 > movie.QueuePosition.Int64 {
 			if _, err := tx.Exec("UPDATE movies SET queue_position = ? WHERE id = ?", m.QueuePosition.Int64-1, m.ID); err != nil {
 				tx.Rollback()
 				return err
