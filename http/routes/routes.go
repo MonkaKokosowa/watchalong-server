@@ -174,16 +174,15 @@ func AddMovieToQueue(w http.ResponseWriter, r *http.Request) {
 
 func RemoveMovieFromQueue(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		id      int  `json:"id"`
-		watched bool `json:"watched"`
+		ID      int  `json:"id"`
+		Watched bool `json:"watched"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		logger.Error("Failed to decode movie ID", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Println("RemoveMovieFromQueue Body:", body)
-	movie, err := api.GetMovie(body.id)
+	movie, err := api.GetMovie(body.ID)
 
 	if err != nil {
 		logger.Error("Failed to get movie", err)
@@ -195,7 +194,7 @@ func RemoveMovieFromQueue(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	if body.watched {
+	if body.Watched {
 		err := movie.FinishMovie()
 		if err != nil {
 			logger.Error("Failed to mark movie as watched", err)
