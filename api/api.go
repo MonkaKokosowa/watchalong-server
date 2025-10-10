@@ -11,35 +11,36 @@ import (
 )
 
 type Alias struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Alias    string `json:"alias"`
+	ID        int    `json:"id"`
+	Username  string `json:"username"`
+	Alias     string `json:"alias"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 func (alias *Alias) AddAlias() error {
 	var existingAlias Alias
 	row := database.DB.QueryRow(`SELECT * FROM aliases WHERE username = ?`, alias.Username)
-	if err := row.Scan(&existingAlias.ID, &existingAlias.Username, &existingAlias.Alias); err != nil {
+	if err := row.Scan(&existingAlias.ID, &existingAlias.Username, &existingAlias.Alias, &existingAlias.AvatarURL); err != nil {
 		if err == sql.ErrNoRows {
-			if _, err := database.DB.Exec(`INSERT INTO aliases (username, alias) VALUES (?, ?)`, alias.Username, alias.Alias); err != nil {
-				logger.Info("[DB] Insert alias for username: " + alias.Username + ", alias: " + alias.Alias)
+			if _, err := database.DB.Exec(`INSERT INTO aliases (username, alias, avatar_url) VALUES (?, ?, ?)`, alias.Username, alias.Alias, alias.AvatarURL); err != nil {
+				logger.Info("[DB] Insert alias for username: " + alias.Username + ", alias: " + alias.Alias + ", avatar_url: " + alias.AvatarURL)
 				return err
 			}
-			logger.Info("[DB] Insert alias for username: " + alias.Username + ", alias: " + alias.Alias)
+			logger.Info("[DB] Insert alias for username: " + alias.Username + ", alias: " + alias.Alias + ", avatar_url: " + alias.AvatarURL)
 		} else {
 			return err
 		}
 	} else {
-		if _, err := database.DB.Exec(`UPDATE aliases SET alias = ? WHERE username = ?`, alias.Alias, alias.Username); err != nil {
+		if _, err := database.DB.Exec(`UPDATE aliases SET alias = ?, avatar_url = ? WHERE username = ?`, alias.Alias, alias.AvatarURL, alias.Username); err != nil {
 			return err
 		}
-		logger.Info("[DB] Update alias for username: " + alias.Username + ", alias: " + alias.Alias)
+		logger.Info("[DB] Update alias for username: " + alias.Username + ", alias: " + alias.Alias + ", avatar_url: " + alias.AvatarURL)
 	}
 	return nil
 }
 
-func GetAliases() (map[string]string, error) {
-	aliases := make(map[string]string)
+func GetAliases() ([]Alias, error) {
+	aliases := []Alias{}
 	rows, err := database.DB.Query(`SELECT * FROM aliases`)
 	if err != nil {
 		return nil, err
@@ -48,10 +49,10 @@ func GetAliases() (map[string]string, error) {
 
 	for rows.Next() {
 		var alias Alias
-		if err := rows.Scan(&alias.ID, &alias.Username, &alias.Alias); err != nil {
+		if err := rows.Scan(&alias.ID, &alias.Username, &alias.Alias, &alias.AvatarURL); err != nil {
 			return nil, err
 		}
-		aliases[alias.Username] = alias.Alias
+		aliases = append(aliases, alias)
 	}
 
 	return aliases, nil
