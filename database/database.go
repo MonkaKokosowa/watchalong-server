@@ -21,7 +21,7 @@ func InitializeDB(filepath string) (*sql.DB, error) {
 		watched BOOLEAN NOT NULL DEFAULT 0,
 		is_movie BOOLEAN NOT NULL,
 		proposed_by TEXT NOT NULL,
-		ratings TEXT NOT NULL DEFAULT '[]',
+		ratings TEXT NOT NULL DEFAULT '{}',
 		queue_position INTEGER,
 		tmdb_id INTEGER NOT NULL,
 		tmdb_image_url TEXT NOT NULL

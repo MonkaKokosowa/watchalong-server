@@ -78,7 +78,7 @@ func RateMovie(movieID int, username string, rating float64) error {
 	}
 
 	ratings := make(map[string]float64)
-	if movie.Ratings != "[]" {
+	if movie.Ratings != "{}" {
 		if err := json.Unmarshal([]byte(movie.Ratings), &ratings); err != nil {
 			return err
 		}
