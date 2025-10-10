@@ -3,8 +3,10 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 
 	"github.com/MonkaKokosowa/watchalong-server/database"
+	"github.com/MonkaKokosowa/watchalong-server/logger"
 	_ "modernc.org/sqlite"
 )
 
@@ -20,8 +22,10 @@ func (alias *Alias) AddAlias() error {
 	if err := row.Scan(&existingAlias.ID, &existingAlias.Username, &existingAlias.Alias); err != nil {
 		if err == sql.ErrNoRows {
 			if _, err := database.DB.Exec(`INSERT INTO aliases (username, alias) VALUES (?, ?)`, alias.Username, alias.Alias); err != nil {
+				logger.Info("[DB] Insert alias for username: " + alias.Username + ", alias: " + alias.Alias)
 				return err
 			}
+			logger.Info("[DB] Insert alias for username: " + alias.Username + ", alias: " + alias.Alias)
 		} else {
 			return err
 		}
@@ -29,6 +33,7 @@ func (alias *Alias) AddAlias() error {
 		if _, err := database.DB.Exec(`UPDATE aliases SET alias = ? WHERE username = ?`, alias.Alias, alias.Username); err != nil {
 			return err
 		}
+		logger.Info("[DB] Update alias for username: " + alias.Username + ", alias: " + alias.Alias)
 	}
 	return nil
 }
@@ -54,8 +59,10 @@ func GetAliases() (map[string]string, error) {
 
 func ClearAliases() error {
 	if _, err := database.DB.Exec(`DELETE FROM aliases`); err != nil {
+		logger.Info("[DB] Cleared all aliases")
 		return err
 	}
+	logger.Info("[DB] Cleared all aliases")
 	return nil
 }
 
@@ -92,8 +99,10 @@ func RateMovie(movieID int, username string, rating float64) error {
 	}
 
 	if _, err := database.DB.Exec(`UPDATE movies SET ratings = ? WHERE id = ?`, string(jsonBytes), movieID); err != nil {
+		logger.Info("[DB] Update ratings for movie id: " + fmt.Sprint(movieID))
 		return err
 	}
+	logger.Info("[DB] Update ratings for movie id: " + fmt.Sprint(movieID))
 
 	return nil
 }
@@ -119,6 +128,7 @@ func (movie *Movie) AddMovie() (int, error) {
 		movie.ProposedBy,
 		movie.TmdbID,
 		movie.TmdbImageUrl); err != nil {
+		logger.Info("[DB] Insert movie failed: " + movie.Name)
 		return 0, err
 	}
 
@@ -127,7 +137,7 @@ func (movie *Movie) AddMovie() (int, error) {
 	if err := row.Scan(&id); err != nil {
 		return 0, err
 	}
-
+	logger.Info("[DB] Insert movie: id=" + fmt.Sprint(id) + ", name=" + movie.Name)
 	return id, nil
 }
 
@@ -178,15 +188,19 @@ func GetMovie(id int) (Movie, error) {
 
 func (movie *Movie) DeleteMovie() error {
 	if _, err := database.DB.Exec(`DELETE FROM movies WHERE id = ?`, movie.ID); err != nil {
+		logger.Info("[DB] Delete movie id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 		return err
 	}
+	logger.Info("[DB] Delete movie id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 	return nil
 }
 
 func ClearMovies() error {
 	if _, err := database.DB.Exec(`DELETE FROM movies`); err != nil {
+		logger.Info("[DB] Cleared all movies")
 		return err
 	}
+	logger.Info("[DB] Cleared all movies")
 	return nil
 }
 
@@ -199,20 +213,28 @@ func (movie *Movie) AddMovieToQueue() error {
 	}
 
 	if highestQueuePosition.Valid {
-		return database.DB.QueryRow("UPDATE movies SET queue_position = ? WHERE id = ? RETURNING id", highestQueuePosition.Int64+1, movie.ID).Scan(&movie.ID)
+		err := database.DB.QueryRow("UPDATE movies SET queue_position = ? WHERE id = ? RETURNING id", highestQueuePosition.Int64+1, movie.ID).Scan(&movie.ID)
+		logger.Info("[DB] Add movie to queue: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
+		return err
 	} else {
-		return database.DB.QueryRow("UPDATE movies SET queue_position = ? WHERE id = ? RETURNING id", 1, movie.ID).Scan(&movie.ID)
+		err := database.DB.QueryRow("UPDATE movies SET queue_position = ? WHERE id = ? RETURNING id", 1, movie.ID).Scan(&movie.ID)
+		logger.Info("[DB] Add movie to queue: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
+		return err
 	}
 }
 
 func (movie *Movie) FinishMovie() error {
 	if _, err := database.DB.Exec(`UPDATE movies SET watched = true WHERE id = ?`, movie.ID); err != nil {
+		logger.Info("[DB] Mark movie as watched: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 		return err
 	}
+	logger.Info("[DB] Mark movie as watched: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 
 	if _, err := database.DB.Exec(`UPDATE movies SET queue_position = NULL WHERE id = ?`, movie.ID); err != nil {
+		logger.Info("[DB] Remove movie from queue after watched: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 		return err
 	}
+	logger.Info("[DB] Remove movie from queue after watched: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 	return nil
 }
 
@@ -224,9 +246,11 @@ func (movie *Movie) RemoveMovieFromQueue() error {
 	}
 
 	if _, err := tx.Exec(`UPDATE movies SET queue_position = NULL WHERE id = ?`, movie.ID); err != nil {
+		logger.Info("[DB] Remove movie from queue: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 		tx.Rollback()
 		return err
 	}
+	logger.Info("[DB] Remove movie from queue: id=" + fmt.Sprint(movie.ID) + ", name=" + movie.Name)
 
 	rows, err := tx.Query(`SELECT * FROM movies WHERE queue_position > ?`, movie.QueuePosition.Int64)
 	if err != nil {
@@ -245,9 +269,11 @@ func (movie *Movie) RemoveMovieFromQueue() error {
 
 		if m.QueuePosition.Int64 > movie.QueuePosition.Int64 {
 			if _, err := tx.Exec("UPDATE movies SET queue_position = ? WHERE id = ?", m.QueuePosition.Int64-1, m.ID); err != nil {
+				logger.Info("[DB] Shift queue position for id=" + fmt.Sprint(m.ID) + ", name=" + m.Name)
 				tx.Rollback()
 				return err
 			}
+			logger.Info("[DB] Shift queue position for id=" + fmt.Sprint(m.ID) + ", name=" + m.Name)
 		}
 	}
 
