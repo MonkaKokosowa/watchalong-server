@@ -92,7 +92,7 @@ func TestWebSocketUpdate(t *testing.T) {
 		t.Fatalf("could not read message: %v", err)
 	}
 
-	expected := fmt.Sprintf(`{"movies":[{"id":%d,"name":"Test Movie","watched":false,"is_movie":true,"proposed_by":"","ratings":"[]","queue_position":{"Int64":1,"Valid":true},"tmdb_id":0,"tmdb_image_url":""}],"queue":[{"id":%d,"name":"Test Movie","watched":false,"is_movie":true,"proposed_by":"","ratings":"[]","queue_position":{"Int64":1,"Valid":true},"tmdb_id":0,"tmdb_image_url":""}]}`, addMovieResponse.ID, addMovieResponse.ID)
+	expected := fmt.Sprintf(`{"movies":[{"id":%d,"name":"Test Movie","watched":false,"is_movie":true,"proposed_by":"","ratings":"{}","queue_position":{"Int64":1,"Valid":true},"tmdb_id":0,"tmdb_image_url":""}],"queue":[{"id":%d,"name":"Test Movie","watched":false,"is_movie":true,"proposed_by":"","ratings":"{}","queue_position":{"Int64":1,"Valid":true},"tmdb_id":0,"tmdb_image_url":""}]}`, addMovieResponse.ID, addMovieResponse.ID)
 	if string(p) != expected {
 		t.Errorf("got %s, want %s", string(p), expected)
 	}
