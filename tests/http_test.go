@@ -315,10 +315,10 @@ func TestHTTPRemoveMovieFromQueue(t *testing.T) {
 
 	body := struct {
 		ID      int  `json:"id"`
-		watched bool `json:"watched"`
+		Watched bool `json:"watched"`
 	}{
 		ID:      id,
-		watched: true,
+		Watched: true,
 	}
 
 	jsonBody, err := json.Marshal(body)
