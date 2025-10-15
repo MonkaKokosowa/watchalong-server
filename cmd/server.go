@@ -11,6 +11,7 @@ import (
 	"github.com/MonkaKokosowa/watchalong-server/database"
 	"github.com/MonkaKokosowa/watchalong-server/http"
 	"github.com/MonkaKokosowa/watchalong-server/logger"
+	"github.com/MonkaKokosowa/watchalong-server/scheduler"
 	"github.com/MonkaKokosowa/watchalong-server/websocket"
 )
 
@@ -24,6 +25,9 @@ func main() {
 		logger.Info("Database initialized successfully")
 	}
 	defer database.CloseDatabase()
+
+	scheduler.StartScheduler()
+	logger.Info("Scheduler started successfully")
 
 	logger.Info("Websocket manager initialized successfully")
 

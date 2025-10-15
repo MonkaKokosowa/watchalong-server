@@ -54,15 +54,17 @@ func (m *Manager) WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *Manager) BroadcastUpdates(movies []api.Movie, queue []api.Movie, aliases []api.Alias) {
+func (m *Manager) BroadcastUpdates(movies []api.Movie, queue []api.Movie, aliases []api.Alias, vote []api.Movie) {
 	response := struct {
 		Movies  []api.Movie `json:"movies"`
 		Queue   []api.Movie `json:"queue"`
 		Aliases []api.Alias `json:"aliases"`
+		Vote    []api.Movie `json:"vote"`
 	}{
 		Movies:  movies,
 		Queue:   queue,
 		Aliases: aliases,
+		Vote:    vote,
 	}
 
 	jsonBytes, err := json.Marshal(response)

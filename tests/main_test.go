@@ -12,6 +12,8 @@ func PrepareDB() {
 	database.InitializeDB("testing.sqlite")
 	api.ClearMovies()
 	api.ClearAliases()
+	api.ClearVotes()
+	api.ClearCurrentVote()
 }
 
 func CleanupDB() {

@@ -31,7 +31,14 @@ func UpdateClients() {
 	if err != nil {
 		aliases = []api.Alias{}
 	}
-	websocket.WsManager.BroadcastUpdates(movies, queue, aliases)
+	vote, err := api.GetCurrentVote()
+	if err != nil {
+		vote = []api.Movie{}
+	}
+	if vote == nil {
+		vote = []api.Movie{}
+	}
+	websocket.WsManager.BroadcastUpdates(movies, queue, aliases, vote)
 }
 
 func GetMovies(w http.ResponseWriter, r *http.Request) {
