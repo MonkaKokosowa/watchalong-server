@@ -411,3 +411,30 @@ func CastVote(movieID int) error {
 	}
 	return nil
 }
+
+func GetVoteResults() ([]Movie, error) {
+	var movies []Movie
+	rows, err := database.DB.Query(`SELECT m.* FROM movies m JOIN votes v ON m.id = v.movie_id ORDER BY v.votes DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var movie Movie
+		if err := rows.Scan(&movie.ID,
+			&movie.Name,
+			&movie.Watched,
+			&movie.IsMovie,
+			&movie.ProposedBy,
+			&movie.Ratings,
+			&movie.QueuePosition,
+			&movie.TmdbID,
+			&movie.TmdbImageUrl); err != nil {
+			return nil, err
+		}
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
+}

@@ -340,7 +340,7 @@ func TestCastVote(t *testing.T) {
 	}
 }
 
-func TestGetVoteWinner(t *testing.T) {
+func TestGetVoteResults(t *testing.T) {
 	PrepareDB()
 	movie1 := api.Movie{
 		Name:    "Test Movie 1",
@@ -374,13 +374,21 @@ func TestGetVoteWinner(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	winner, err := api.GetVoteWinner()
+	results, err := api.GetVoteResults()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if winner.ID != id1 {
-		t.Errorf("got winner id %d, want %d", winner.ID, id1)
+	if len(results) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(results))
+	}
+
+	if results[0].ID != id1 {
+		t.Errorf("got winner id %d, want %d", results[0].ID, id1)
+	}
+
+	if results[1].ID != id2 {
+		t.Errorf("got second place id %d, want %d", results[1].ID, id2)
 	}
 }
 

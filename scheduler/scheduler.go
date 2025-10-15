@@ -15,14 +15,16 @@ func StartScheduler() {
 	_, err := c.AddFunc("CRON_TZ=Europe/Warsaw 0 0 * * 0", func() {
 		logger.Info("Running cron job to update vote")
 
-		// Get vote winner
-		winner, err := api.GetVoteWinner()
+		// Get vote results
+		winners, err := api.GetVoteResults()
 		if err != nil {
-			logger.Error("Error getting vote winner: ", err)
+			logger.Error("Error getting vote results: ", err)
 		} else {
-			// Add winner to queue
-			if err := winner.AddMovieToQueue(); err != nil {
-				logger.Error("Error adding winner to queue: ", err)
+			// Add winners to queue
+			for _, winner := range winners {
+				if err := winner.AddMovieToQueue(); err != nil {
+					logger.Error("Error adding winner to queue: ", err)
+				}
 			}
 		}
 
