@@ -405,9 +405,18 @@ func GetCurrentVote() ([]Movie, error) {
 	return movies, nil
 }
 
-func CastVote(movieID int) error {
-	if _, err := database.DB.Exec(`UPDATE votes SET votes = votes + 1 WHERE movie_id = ?`, movieID); err != nil {
-		return err
+func reverseInts(input []int) []int {
+	if len(input) == 0 {
+		return input
+	}
+	return append(reverseInts(input[1:]), input[0])
+}
+
+func CastVote(movieIDs []int) error {
+	for index, movieID := range reverseInts(movieIDs) {
+		if _, err := database.DB.Exec(`UPDATE votes SET votes = votes + ? WHERE movie_id = ?`, index, movieID); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 type Vote struct {
-	MovieID int `json:"movie_id"`
+	MovieIDs []int `json:"movie_ids"`
 }
 
 func GetCurrentVote(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +31,7 @@ func CastVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := api.CastVote(v.MovieID); err != nil {
+	if err := api.CastVote(v.MovieIDs); err != nil {
 		logger.Error("Error casting vote: ", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

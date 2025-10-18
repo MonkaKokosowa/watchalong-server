@@ -326,7 +326,7 @@ func TestCastVote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := api.CastVote(id1); err != nil {
+	if err := api.CastVote(movieIDs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -338,6 +338,13 @@ func TestCastVote(t *testing.T) {
 	if winner.ID != id1 {
 		t.Errorf("got winner id %d, want %d", winner.ID, id1)
 	}
+}
+
+func reverseInts(input []int) []int {
+	if len(input) == 0 {
+		return input
+	}
+	return append(reverseInts(input[1:]), input[0])
 }
 
 func TestGetVoteResults(t *testing.T) {
@@ -364,13 +371,7 @@ func TestGetVoteResults(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := api.CastVote(id1); err != nil {
-		t.Fatal(err)
-	}
-	if err := api.CastVote(id1); err != nil {
-		t.Fatal(err)
-	}
-	if err := api.CastVote(id2); err != nil {
+	if err := api.CastVote(reverseInts(movieIDs)); err != nil {
 		t.Fatal(err)
 	}
 
@@ -383,12 +384,12 @@ func TestGetVoteResults(t *testing.T) {
 		t.Fatalf("expected 2 results, got %d", len(results))
 	}
 
-	if results[0].ID != id1 {
-		t.Errorf("got winner id %d, want %d", results[0].ID, id1)
+	if results[0].ID != id2 {
+		t.Errorf("got winner id %d, want %d", results[0].ID, id2)
 	}
 
-	if results[1].ID != id2 {
-		t.Errorf("got second place id %d, want %d", results[1].ID, id2)
+	if results[1].ID != id1 {
+		t.Errorf("got second place id %d, want %d", results[1].ID, id1)
 	}
 }
 
