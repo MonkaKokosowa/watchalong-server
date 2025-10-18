@@ -41,6 +41,23 @@ func InitializeDB(filepath string) (*sql.DB, error) {
 		return nil, err
 	}
 
+	_, err = DB.Exec(`CREATE TABLE IF NOT EXISTS votes (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		movie_id INTEGER NOT NULL,
+		votes INTEGER NOT NULL DEFAULT 0
+	)`)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = DB.Exec(`CREATE TABLE IF NOT EXISTS current_vote (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		movie_id INTEGER NOT NULL
+	)`)
+	if err != nil {
+		return nil, err
+	}
+
 	return DB, nil
 }
 

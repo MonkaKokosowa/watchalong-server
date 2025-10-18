@@ -384,3 +384,90 @@ func TestHTTPGetQueue(t *testing.T) {
 		t.Errorf("expected movie name %s, got %s", newMovie.Name, movies[0].Name)
 	}
 }
+
+func TestHTTPGetCurrentVote(t *testing.T) {
+	server, cleanup := setup(t)
+	defer cleanup()
+
+	movie1 := api.Movie{
+		Name:    "Test Movie 1",
+		IsMovie: true,
+	}
+	id1, err := movie1.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	movieIDs := []int{id1}
+	if err := api.CreateNewVote(movieIDs); err != nil {
+		t.Fatal(err)
+	}
+
+	resp, err := http.Get(server.URL + "/vote")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected status OK, got %v", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var movies []api.Movie
+	if err := json.Unmarshal(body, &movies); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(movies) != 1 {
+		t.Fatalf("expected 1 movie, got %d", len(movies))
+	}
+
+	if movies[0].Name != movie1.Name {
+		t.Errorf("expected movie name %s, got %s", movie1.Name, movies[0].Name)
+	}
+}
+
+func TestHTTPCastVote(t *testing.T) {
+	server, cleanup := setup(t)
+	defer cleanup()
+
+	movie1 := api.Movie{
+		Name:    "Test Movie 1",
+		IsMovie: true,
+	}
+	id1, err := movie1.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	movieIDs := []int{id1}
+	if err := api.CreateNewVote(movieIDs); err != nil {
+		t.Fatal(err)
+	}
+
+	vote := struct {
+		MovieID int `json:"movie_id"`
+	}{
+		MovieID: id1,
+	}
+
+	jsonVote, err := json.Marshal(vote)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp, err := http.Post(server.URL+"/vote", "application/json", strings.NewReader(string(jsonVote)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected status OK, got %v", resp.Status)
+	}
+}

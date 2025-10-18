@@ -91,9 +91,51 @@ func TestWebSocketUpdate(t *testing.T) {
 		t.Fatalf("could not read message: %v", err)
 	}
 
-	expected := `{"movies":[{"id":17,"name":"Test Movie","watched":false,"is_movie":true,"proposed_by":"","ratings":"{}","queue_position":{"Int64":1,"Valid":true},"tmdb_id":0,"tmdb_image_url":""}],"queue":[{"id":17,"name":"Test Movie","watched":false,"is_movie":true,"proposed_by":"","ratings":"{}","queue_position":{"Int64":1,"Valid":true},"tmdb_id":0,"tmdb_image_url":""}],"aliases":[]}`
-	if string(p) != expected {
-		t.Errorf("got %s, want %s", string(p), expected)
+	allMovies, err := api.GetMovies()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	queue, err := api.GetQueue()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	aliases, err := api.GetAliases()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if aliases == nil {
+		aliases = []api.Alias{}
+	}
+
+	vote, err := api.GetCurrentVote()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if vote == nil {
+		vote = []api.Movie{}
+	}
+
+	expectedResponse := struct {
+		Movies  []api.Movie `json:"movies"`
+		Queue   []api.Movie `json:"queue"`
+		Aliases []api.Alias `json:"aliases"`
+		Vote    []api.Movie `json:"vote"`
+	}{
+		Movies:  allMovies,
+		Queue:   queue,
+		Aliases: aliases,
+		Vote:    vote,
+	}
+
+	expected, err := json.Marshal(expectedResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(p) != string(expected) {
+		t.Errorf("got %s, want %s", string(p), string(expected))
 	}
 
 	// Gracefully close the connection

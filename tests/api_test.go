@@ -246,3 +246,198 @@ func TestRateMovie(t *testing.T) {
 		t.Errorf("got ratings %s, want {\"test\":5}", retrievedMovie.Ratings)
 	}
 }
+
+func TestCreateNewVote(t *testing.T) {
+	PrepareDB()
+	movie1 := api.Movie{
+		Name:    "Test Movie 1",
+		IsMovie: true,
+	}
+	movie2 := api.Movie{
+		Name:    "Test Movie 2",
+		IsMovie: true,
+	}
+	id1, err := movie1.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+	id2, err := movie2.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	movieIDs := []int{id1, id2}
+	if err := api.CreateNewVote(movieIDs); err != nil {
+		t.Fatal(err)
+	}
+
+	currentVote, err := api.GetCurrentVote()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(currentVote) != 2 {
+		t.Errorf("got %d movies in current vote, want 2", len(currentVote))
+	}
+}
+
+func TestGetCurrentVote(t *testing.T) {
+	PrepareDB()
+	movie1 := api.Movie{
+		Name:    "Test Movie 1",
+		IsMovie: true,
+	}
+	id1, err := movie1.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	movieIDs := []int{id1}
+	if err := api.CreateNewVote(movieIDs); err != nil {
+		t.Fatal(err)
+	}
+
+	currentVote, err := api.GetCurrentVote()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(currentVote) != 1 {
+		t.Errorf("got %d movies in current vote, want 1", len(currentVote))
+	}
+	if currentVote[0].ID != id1 {
+		t.Errorf("got movie id %d, want %d", currentVote[0].ID, id1)
+	}
+}
+
+func TestCastVote(t *testing.T) {
+	PrepareDB()
+	movie1 := api.Movie{
+		Name:    "Test Movie 1",
+		IsMovie: true,
+	}
+	id1, err := movie1.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	movieIDs := []int{id1}
+	if err := api.CreateNewVote(movieIDs); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := api.CastVote(movieIDs); err != nil {
+		t.Fatal(err)
+	}
+
+	winner, err := api.GetVoteWinner()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if winner.ID != id1 {
+		t.Errorf("got winner id %d, want %d", winner.ID, id1)
+	}
+}
+
+func reverseInts(input []int) []int {
+	if len(input) == 0 {
+		return input
+	}
+	return append(reverseInts(input[1:]), input[0])
+}
+
+func TestGetVoteResults(t *testing.T) {
+	PrepareDB()
+	movie1 := api.Movie{
+		Name:    "Test Movie 1",
+		IsMovie: true,
+	}
+	movie2 := api.Movie{
+		Name:    "Test Movie 2",
+		IsMovie: true,
+	}
+	id1, err := movie1.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+	id2, err := movie2.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	movieIDs := []int{id1, id2}
+	if err := api.CreateNewVote(movieIDs); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := api.CastVote(reverseInts(movieIDs)); err != nil {
+		t.Fatal(err)
+	}
+
+	results, err := api.GetVoteResults()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(results) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(results))
+	}
+
+	if results[0].ID != id2 {
+		t.Errorf("got winner id %d, want %d", results[0].ID, id2)
+	}
+
+	if results[1].ID != id1 {
+		t.Errorf("got second place id %d, want %d", results[1].ID, id1)
+	}
+}
+
+func TestGetUnwatchedMoviesNotInQueue(t *testing.T) {
+	PrepareDB()
+	movie1 := api.Movie{
+		Name:    "Test Movie 1",
+		IsMovie: true,
+	}
+	movie2 := api.Movie{
+		Name:    "Test Movie 2",
+		IsMovie: true,
+	}
+	movie3 := api.Movie{
+		Name:    "Test Movie 3",
+		IsMovie: true,
+	}
+	id1, err := movie1.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+	id2, err := movie2.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+	movie2.ID = id2
+	if err := movie2.FinishMovie(); err != nil {
+		t.Fatal(err)
+	}
+	id3, err := movie3.AddMovie()
+	if err != nil {
+		t.Fatal(err)
+	}
+	movie1.ID = id1
+	movie3.ID = id3
+	if err := movie3.AddMovieToQueue(); err != nil {
+		t.Fatal(err)
+	}
+
+	movies, err := api.GetUnwatchedMoviesNotInQueue()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(movies) != 1 {
+		t.Errorf("got %d movies, want 1", len(movies))
+	}
+	if movies[0].ID != id1 {
+		t.Errorf("got movie id %d, want %d", movies[0].ID, id1)
+	}
+}

@@ -299,3 +299,151 @@ func GetQueue() ([]Movie, error) {
 
 	return movies, nil
 }
+
+func GetUnwatchedMoviesNotInQueue() ([]Movie, error) {
+	var movies []Movie
+	rows, err := database.DB.Query(`SELECT * FROM movies WHERE watched = 0 AND queue_position IS NULL`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var movie Movie
+		if err := rows.Scan(&movie.ID,
+			&movie.Name,
+			&movie.Watched,
+			&movie.IsMovie,
+			&movie.ProposedBy,
+			&movie.Ratings,
+			&movie.QueuePosition,
+			&movie.TmdbID,
+			&movie.TmdbImageUrl); err != nil {
+			return nil, err
+		}
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
+}
+
+func CreateNewVote(movieIDs []int) error {
+	tx, err := database.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	for _, movieID := range movieIDs {
+		if _, err := tx.Exec(`INSERT INTO current_vote (movie_id) VALUES (?)`, movieID); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if _, err := tx.Exec(`INSERT INTO votes (movie_id) VALUES (?)`, movieID); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func ClearCurrentVote() error {
+	if _, err := database.DB.Exec(`DELETE FROM current_vote`); err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetVoteWinner() (Movie, error) {
+	var movie Movie
+	row := database.DB.QueryRow(`SELECT m.* FROM movies m JOIN votes v ON m.id = v.movie_id ORDER BY v.votes DESC LIMIT 1`)
+	if err := row.Scan(&movie.ID,
+		&movie.Name,
+		&movie.Watched,
+		&movie.IsMovie,
+		&movie.ProposedBy,
+		&movie.Ratings,
+		&movie.QueuePosition,
+		&movie.TmdbID,
+		&movie.TmdbImageUrl); err != nil {
+		return movie, err
+	}
+	return movie, nil
+}
+
+func ClearVotes() error {
+	if _, err := database.DB.Exec(`DELETE FROM votes`); err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetCurrentVote() ([]Movie, error) {
+	var movies []Movie
+	rows, err := database.DB.Query(`SELECT m.* FROM movies m JOIN current_vote cv ON m.id = cv.movie_id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var movie Movie
+		if err := rows.Scan(&movie.ID,
+			&movie.Name,
+			&movie.Watched,
+			&movie.IsMovie,
+			&movie.ProposedBy,
+			&movie.Ratings,
+			&movie.QueuePosition,
+			&movie.TmdbID,
+			&movie.TmdbImageUrl); err != nil {
+			return nil, err
+		}
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
+}
+
+func reverseInts(input []int) []int {
+	if len(input) == 0 {
+		return input
+	}
+	return append(reverseInts(input[1:]), input[0])
+}
+
+func CastVote(movieIDs []int) error {
+	for index, movieID := range reverseInts(movieIDs) {
+		if _, err := database.DB.Exec(`UPDATE votes SET votes = votes + ? WHERE movie_id = ?`, index, movieID); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func GetVoteResults() ([]Movie, error) {
+	var movies []Movie
+	rows, err := database.DB.Query(`SELECT m.* FROM movies m JOIN votes v ON m.id = v.movie_id ORDER BY v.votes DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var movie Movie
+		if err := rows.Scan(&movie.ID,
+			&movie.Name,
+			&movie.Watched,
+			&movie.IsMovie,
+			&movie.ProposedBy,
+			&movie.Ratings,
+			&movie.QueuePosition,
+			&movie.TmdbID,
+			&movie.TmdbImageUrl); err != nil {
+			return nil, err
+		}
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
+}
